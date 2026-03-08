@@ -1,0 +1,2001 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Turnos Velasco</title>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Turnos">
+<meta name="theme-color" content="#0d0f14">
+
+<link rel="manifest" href="manifest.json">
+<script>
+// Inline manifest para funcionar sin archivos externos
+const manifestData = {
+  "name": "Turnos Velasco 2026",
+  "short_name": "Turnos",
+  "description": "Gestión de Turnos Anuales — José Carlos Velasco",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0d0f14",
+  "theme_color": "#0d0f14",
+  "orientation": "portrait"
+};
+const blob = new Blob([JSON.stringify(manifestData)], {type: 'application/json'});
+const manifestURL = URL.createObjectURL(blob);
+document.querySelector('link[rel="manifest"]').href = manifestURL;
+</script>
+
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #161921;
+    --surface2: #1e2330;
+    --border: #2a2f3d;
+    --accent: #4f9cf9;
+    --accent2: #7c5cfc;
+    --green: #34d399;
+    --orange: #fb923c;
+    --red: #f87171;
+    --yellow: #fbbf24;
+    --purple: #c084fc;
+    --teal: #2dd4bf;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --text-dim: #94a3b8;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Courier New', Courier, monospace;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, #0d0f14 0%, #161b2e 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 24px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-left h1 {
+    font-family: 'Arial Black', 'Arial Bold', Arial, sans-serif;
+    font-size: 1.5rem;
+    font-weight: 800;
+    background: linear-gradient(90deg, #4f9cf9, #7c5cfc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.02em;
+  }
+
+  .header-left p {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .today-badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 0.75rem;
+    color: var(--accent);
+  }
+
+  /* STATS BAR */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stat-item {
+    background: var(--surface);
+    padding: 16px 20px;
+    text-align: center;
+  }
+
+  .stat-val {
+    font-family: 'Arial Black', 'Arial Bold', Arial, sans-serif;
+    font-size: 1.8rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .stat-lbl {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 4px;
+  }
+
+  /* CONTROLS */
+  .controls {
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .view-tabs {
+    display: flex;
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 3px;
+    gap: 2px;
+  }
+
+  .view-tab {
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .view-tab.active {
+    background: var(--accent2);
+    color: white;
+  }
+
+  .month-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+  }
+
+  .nav-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    transition: all 0.15s;
+  }
+  .nav-btn:hover { background: var(--border); }
+
+  .month-label {
+    font-family: 'Arial Black', 'Arial Bold', Arial, sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    min-width: 160px;
+    text-align: center;
+    color: var(--text);
+  }
+
+  /* FILTER BAR */
+  .filter-bar {
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .filter-label {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .filter-chips {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .chip {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.68rem;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Courier New', Courier, monospace;
+  }
+
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  .chip.active { background: var(--accent); border-color: var(--accent); color: white; }
+  .chip.ct.active { background: #4f9cf9; border-color: #4f9cf9; }
+  .chip.cm.active { background: #7c5cfc; border-color: #7c5cfc; }
+  .chip.special.active { background: #34d399; border-color: #34d399; color: #0d0f14; }
+  .chip.libre.active { background: #475569; border-color: #475569; }
+
+  /* CONTENT */
+  #content {
+    padding: 24px;
+  }
+
+  /* CALENDAR VIEW */
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+
+  .cal-header {
+    text-align: center;
+    padding: 8px 4px;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .cal-day {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px;
+    min-height: 72px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    position: relative;
+    cursor: default;
+    transition: border-color 0.15s;
+  }
+
+  .cal-day:hover { border-color: #4a5568; }
+
+  .cal-day.empty {
+    background: transparent;
+    border-color: transparent;
+  }
+
+  .cal-day.today {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent) inset;
+  }
+
+  .cal-day .day-num {
+    font-family: 'Arial Black', 'Arial Bold', Arial, sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-dim);
+  }
+
+  .cal-day.today .day-num { color: var(--accent); }
+
+  .cal-day .shift-badge {
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  /* LIST VIEW */
+  .list-view {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .list-item {
+    display: grid;
+    grid-template-columns: 120px 100px 80px 1fr;
+    align-items: center;
+    padding: 10px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    gap: 16px;
+    transition: background 0.1s;
+  }
+
+  .list-item:hover { background: var(--surface2); }
+
+  .list-item.today { border-color: var(--accent); }
+
+  .list-date { font-size: 0.75rem; color: var(--text-dim); }
+  .list-day { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  .list-shift {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 5px;
+    text-align: center;
+  }
+
+  /* SHIFT TYPE COLORS */
+  .type-ct { background: rgba(79,156,249,0.15); color: #4f9cf9; border: 1px solid rgba(79,156,249,0.3); }
+  .type-cm { background: rgba(124,92,252,0.15); color: #c084fc; border: 1px solid rgba(124,92,252,0.3); }
+  .type-rm { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+  .type-rn { background: rgba(45,212,191,0.15); color: #2dd4bf; border: 1px solid rgba(45,212,191,0.3); }
+  .type-rt { background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.3); }
+  .type-dis { background: rgba(251,146,60,0.15); color: #fb923c; border: 1px solid rgba(251,146,60,0.3); }
+  .type-vl { background: rgba(52,211,153,0.15); color: #34d399; border: 1px solid rgba(52,211,153,0.3); }
+  .type-vn { background: rgba(52,211,153,0.1); color: #6ee7b7; border: 1px solid rgba(52,211,153,0.2); }
+  .type-dn { background: rgba(100,116,139,0.2); color: #94a3b8; border: 1px solid rgba(100,116,139,0.3); }
+  .type-ld { background: rgba(100,116,139,0.2); color: #94a3b8; border: 1px solid rgba(100,116,139,0.3); }
+  .type-dr { background: rgba(100,116,139,0.2); color: #94a3b8; border: 1px solid rgba(100,116,139,0.3); }
+  .type-d  { background: rgba(30,35,48,0.5); color: #475569; border: 1px solid rgba(71,85,105,0.2); }
+
+  /* WEEK VIEW */
+  .week-view {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+  }
+
+  .week-col {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .week-col-header {
+    background: var(--surface2);
+    padding: 10px 8px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .week-col-header .wday {
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+  }
+
+  .week-col-header .wdate {
+    font-family: 'Arial Black', 'Arial Bold', Arial, sans-serif;
+    font-size: 1.2rem;
+    font-weight: 800;
+    margin-top: 2px;
+  }
+
+  .week-col.today-col { border-color: var(--accent); }
+  .week-col.today-col .week-col-header { background: rgba(79,156,249,0.1); }
+  .week-col.today-col .wdate { color: var(--accent); }
+
+  .week-shift {
+    padding: 12px 8px;
+    text-align: center;
+    font-size: 0.72rem;
+    font-weight: 600;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* STATS VIEW */
+  .stats-view {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+
+  .stat-card-title {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .stat-card-val {
+    font-family: 'Arial Black', 'Arial Bold', Arial, sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .shift-freq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 8px;
+  }
+
+  .freq-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.7rem;
+  }
+
+  .freq-bar-bg {
+    flex: 1;
+    background: var(--surface2);
+    border-radius: 2px;
+    height: 4px;
+    overflow: hidden;
+  }
+
+  .freq-bar { height: 100%; border-radius: 2px; background: var(--accent2); }
+
+  .freq-label { width: 70px; color: var(--text-dim); }
+  .freq-count { width: 24px; text-align: right; color: var(--text-muted); }
+
+  /* Section header */
+  .section-title {
+    font-family: 'Arial Black', 'Arial Bold', Arial, sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .hidden { display: none !important; }
+
+  /* Search */
+  .search-input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.75rem;
+    color: var(--text);
+    outline: none;
+    width: 180px;
+  }
+  .search-input:focus { border-color: var(--accent); }
+  .search-input::placeholder { color: var(--text-muted); }
+
+  /* Tooltip */
+  .tooltip {
+    position: fixed;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.72rem;
+    pointer-events: none;
+    z-index: 999;
+    display: none;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+
+  /* EDIT BUTTON */
+  .edit-btn {
+    display: none;
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.6rem;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    z-index: 2;
+    line-height: 1;
+  }
+  .cal-day:hover .edit-btn { display: flex; }
+  .edit-btn:hover { background: var(--accent2); border-color: var(--accent2); color: white; }
+
+  .list-edit-btn {
+    margin-left: auto;
+    padding: 4px 10px;
+    border-radius: 5px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text-muted);
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.65rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .list-edit-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  .week-edit-btn {
+    display: block;
+    margin: 0 8px 8px;
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.62rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    width: calc(100% - 16px);
+  }
+  .week-edit-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  /* EDIT MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    width: 380px;
+    max-width: 95vw;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+    transform: translateY(10px);
+    transition: transform 0.2s;
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+
+  .modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .modal-title {
+    font-family: 'Arial Black', 'Arial Bold', Arial, sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  .modal-date {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .modal-close {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+  .modal-close:hover { background: var(--red); border-color: var(--red); color: white; }
+
+  .modal-current {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.72rem;
+  }
+  .modal-current-label { color: var(--text-muted); }
+
+  .modal-section-label {
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .modal-select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.78rem;
+    color: var(--text);
+    outline: none;
+    margin-bottom: 16px;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    cursor: pointer;
+  }
+  .modal-select:focus { border-color: var(--accent2); }
+
+  .modal-or {
+    text-align: center;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    position: relative;
+  }
+  .modal-or::before, .modal-or::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 40%;
+    height: 1px;
+    background: var(--border);
+  }
+  .modal-or::before { left: 0; }
+  .modal-or::after { right: 0; }
+
+  .modal-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.78rem;
+    color: var(--text);
+    outline: none;
+    margin-bottom: 20px;
+  }
+  .modal-input:focus { border-color: var(--accent); }
+  .modal-input::placeholder { color: var(--text-muted); }
+
+  .modal-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  .btn-cancel {
+    padding: 9px 18px;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-cancel:hover { background: var(--surface2); color: var(--text); }
+
+  .btn-save {
+    padding: 9px 22px;
+    border-radius: 7px;
+    border: none;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.72rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn-save:hover { opacity: 0.85; }
+
+  .pdf-btn {
+    padding: 7px 14px;
+    border-radius: 7px;
+    border: 1px solid var(--accent);
+    background: rgba(79,156,249,0.1);
+    color: var(--accent);
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .pdf-btn:hover { background: rgba(79,156,249,0.2); }
+
+  .pdf-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .pdf-modal-overlay.open { display: flex; }
+  .pdf-modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    width: 100%;
+    max-width: 340px;
+  }
+  .pdf-modal-title { font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
+  .pdf-modal-sub { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 18px; }
+  .pdf-option-btn {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.78rem;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .pdf-option-btn:hover { border-color: var(--accent); background: rgba(79,156,249,0.08); }
+  .pdf-month-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .pdf-month-btn {
+    padding: 8px 4px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text-dim);
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.68rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .pdf-month-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .modified-dot {
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--yellow);
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+
+  .changes-bar {
+    background: rgba(251,191,36,0.08);
+    border-bottom: 1px solid rgba(251,191,36,0.2);
+    padding: 8px 24px;
+    font-size: 0.68rem;
+    color: var(--yellow);
+    display: none;
+    align-items: center;
+    gap: 10px;
+  }
+  .changes-bar.visible { display: flex; }
+  .reset-btn {
+    margin-left: auto;
+    padding: 3px 10px;
+    border-radius: 4px;
+    border: 1px solid rgba(251,191,36,0.3);
+    background: transparent;
+    color: var(--yellow);
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.65rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .reset-btn:hover { background: rgba(251,191,36,0.15); }
+
+  @media (max-width: 768px) {
+    .calendar-grid { grid-template-columns: repeat(7, 1fr); }
+    .cal-day { min-height: 50px; padding: 4px; }
+    .cal-day .day-num { font-size: 0.7rem; }
+    .cal-day .shift-badge { font-size: 0.5rem; }
+    .list-item { grid-template-columns: 90px 1fr; }
+    .list-day, .list-item > :nth-child(4) { display: none; }
+    .week-view { grid-template-columns: repeat(7, 1fr); }
+    #content { padding: 12px; }
+    .controls { padding: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>Velasco Esteban, José Carlos</h1>
+    <p>Gestión de Turnos Anuales · 2026</p>
+  </div>
+  <div class="header-right">
+    <div class="today-badge" id="todayBadge">Cargando…</div>
+  </div>
+</header>
+
+<div class="stats-bar" id="statsBar">
+  <div class="stat-item">
+    <div class="stat-val" style="color:#4f9cf9" id="s-ct">–</div>
+    <div class="stat-lbl">Turnos CT</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-val" style="color:#c084fc" id="s-cm">–</div>
+    <div class="stat-lbl">Turnos CM</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-val" style="color:#34d399" id="s-vl">–</div>
+    <div class="stat-lbl">Vacaciones</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-val" style="color:#fb923c" id="s-dis">–</div>
+    <div class="stat-lbl">Disponible</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-val" style="color:#475569" id="s-d">–</div>
+    <div class="stat-lbl">Descanso</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-val" style="color:#fbbf24" id="s-rm">–</div>
+    <div class="stat-lbl">RM/RN/RT</div>
+  </div>
+</div>
+
+<div class="controls">
+  <div class="view-tabs">
+    <button class="view-tab active" onclick="setView('calendar')">Calendario</button>
+    <button class="view-tab" onclick="setView('list')">Lista</button>
+    <button class="view-tab" onclick="setView('week')">Semana</button>
+    <button class="view-tab" onclick="setView('stats')">Estadísticas</button>
+  </div>
+
+  <div class="month-nav" id="monthNav">
+    <button class="nav-btn" onclick="changeMonth(-1)">‹</button>
+    <div class="month-label" id="monthLabel">–</div>
+    <button class="nav-btn" onclick="changeMonth(1)">›</button>
+  </div>
+
+  <div class="month-nav" id="weekNav" style="display:none">
+    <button class="nav-btn" onclick="changeWeek(-1)">‹</button>
+    <div class="month-label" id="weekLabel">–</div>
+    <button class="nav-btn" onclick="changeWeek(1)">›</button>
+  </div>
+
+  <input class="search-input" type="text" id="searchInput" placeholder="Buscar turno…" oninput="render()">
+  <button class="pdf-btn" onclick="showPdfModal()" title="Exportar a PDF">📄 PDF</button>
+</div>
+
+<div class="filter-bar">
+  <span class="filter-label">Tipo:</span>
+  <div class="filter-chips">
+    <button class="chip active" data-f="all" onclick="setFilter('all', this)">Todos</button>
+    <button class="chip ct" data-f="ct" onclick="setFilter('ct', this)">CT</button>
+    <button class="chip cm" data-f="cm" onclick="setFilter('cm', this)">CM</button>
+    <button class="chip special" data-f="vl" onclick="setFilter('vl', this)">Vacaciones</button>
+    <button class="chip" data-f="rm" onclick="setFilter('rm', this)">RM/RN/RT</button>
+    <button class="chip" data-f="dis" onclick="setFilter('dis', this)">DIS</button>
+    <button class="chip libre" data-f="d" onclick="setFilter('d', this)">Descanso</button>
+  </div>
+</div>
+
+<div class="changes-bar" id="changesBar">
+  <span>💾 Cambios en esta sesión</span>
+  <span id="changesCount" style="color:var(--text-muted)"></span>
+  <button class="reset-btn" onclick="exportChanges()" style="background:rgba(79,156,249,0.15);border-color:rgba(79,156,249,0.4);color:#4f9cf9">⬇ Exportar cambios</button>
+  <button class="reset-btn" onclick="document.getElementById('importFile').click()" style="background:rgba(52,211,153,0.1);border-color:rgba(52,211,153,0.3);color:#34d399">⬆ Importar</button>
+  <button class="reset-btn" onclick="resetChanges()">Restaurar original</button>
+  <input type="file" id="importFile" accept=".json" style="display:none" onchange="importChanges(event)">
+</div>
+
+<div id="content"></div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOnOverlay(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Editar turno</div>
+        <div class="modal-date" id="modalDateLabel">–</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-current">
+      <span class="modal-current-label">Turno actual:</span>
+      <span id="modalCurrentShift" class="shift-badge">–</span>
+    </div>
+    <div id="modalScheduleInfo" style="display:none; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:10px 14px; margin-bottom:20px; flex-direction:column; gap:8px;">
+      <div style="display:flex; justify-content:space-between;">
+        <span style="font-size:0.68rem; color:var(--text-muted);">🟢 Entrada</span>
+        <span id="modalEntrada" style="font-size:0.9rem; color:var(--green); font-weight:700; font-family:'Courier New',monospace;">–</span>
+      </div>
+      <div style="display:flex; justify-content:space-between;">
+        <span style="font-size:0.68rem; color:var(--text-muted);">🔴 Salida</span>
+        <span id="modalSalida" style="font-size:0.9rem; color:var(--red); font-weight:700; font-family:'Courier New',monospace;">–</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; border-top:1px solid var(--border); padding-top:8px;">
+        <span style="font-size:0.68rem; color:var(--text-muted);">⏱ Horas totales</span>
+        <span id="modalHoras" style="font-size:0.9rem; color:var(--accent); font-weight:700;">–</span>
+      </div>
+    </div>
+    <div class="modal-section-label">Seleccionar del listado</div>
+    <select class="modal-select" id="modalSelect" onchange="onSelectChange()">
+      <option value="">– Selecciona un turno –</option>
+    </select>
+    <div class="modal-or">o escribe manualmente</div>
+    <input class="modal-input" id="modalInput" type="text" placeholder="Ej: CT 120, CM 305, DIS MT…" oninput="onInputChange()">
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-save" onclick="saveEdit()">Guardar cambio</button>
+    </div>
+  </div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<!-- Modal PDF -->
+<div class="pdf-modal-overlay" id="pdfModalOverlay" onclick="closePdfModal(event)">
+  <div class="pdf-modal">
+    <div class="pdf-modal-title">📄 Exportar a PDF</div>
+    <div class="pdf-modal-sub">Selecciona el período a exportar</div>
+    <button class="pdf-option-btn" onclick="exportPdf('year')">📅 Año completo 2026</button>
+    <div style="font-size:0.68rem; color:var(--text-muted); margin-bottom:8px; text-transform:uppercase; letter-spacing:0.05em;">Por mes</div>
+    <div class="pdf-month-grid" id="pdfMonthGrid"></div>
+    <button class="btn-cancel" style="width:100%; text-align:center; margin-top:6px;" onclick="closePdfModal()">Cancelar</button>
+  </div>
+</div>
+
+<script>
+const SCHEDULE = [{"date":"01/01/2026","day":"Jueves","shift":"CM 4604"},{"date":"02/01/2026","day":"Viernes","shift":"D"},{"date":"03/01/2026","day":"Sábado","shift":"D"},{"date":"04/01/2026","day":"Domingo","shift":"D"},{"date":"05/01/2026","day":"Lunes","shift":"CM 212"},{"date":"06/01/2026","day":"Martes","shift":"D"},{"date":"07/01/2026","day":"Miércoles","shift":"DR"},{"date":"08/01/2026","day":"Jueves","shift":"D"},{"date":"09/01/2026","day":"Viernes","shift":"D"},{"date":"10/01/2026","day":"Sábado","shift":"DR"},{"date":"11/01/2026","day":"Domingo","shift":"DR"},{"date":"12/01/2026","day":"Lunes","shift":"D"},{"date":"13/01/2026","day":"Martes","shift":"D"},{"date":"14/01/2026","day":"Miércoles","shift":"D"},{"date":"15/01/2026","day":"Jueves","shift":"CM 110"},{"date":"16/01/2026","day":"Viernes","shift":"CM 210"},{"date":"17/01/2026","day":"Sábado","shift":"CM 310"},{"date":"18/01/2026","day":"Domingo","shift":"D"},{"date":"19/01/2026","day":"Lunes","shift":"D"},{"date":"20/01/2026","day":"Martes","shift":"DIS MT"},{"date":"21/01/2026","day":"Miércoles","shift":"DIS MT"},{"date":"22/01/2026","day":"Jueves","shift":"DIS MT"},{"date":"23/01/2026","day":"Viernes","shift":"RM 200"},{"date":"24/01/2026","day":"Sábado","shift":"D"},{"date":"25/01/2026","day":"Domingo","shift":"D"},{"date":"26/01/2026","day":"Lunes","shift":"CT 115"},{"date":"27/01/2026","day":"Martes","shift":"CT 104"},{"date":"28/01/2026","day":"Miércoles","shift":"DIS T"},{"date":"29/01/2026","day":"Jueves","shift":"D"},{"date":"30/01/2026","day":"Viernes","shift":"CT 226"},{"date":"31/01/2026","day":"Sábado","shift":"CT 313"},{"date":"01/02/2026","day":"Domingo","shift":"CT 413"},{"date":"02/02/2026","day":"Lunes","shift":"CT 111"},{"date":"03/02/2026","day":"Martes","shift":"D"},{"date":"04/02/2026","day":"Miércoles","shift":"CT 104"},{"date":"05/02/2026","day":"Jueves","shift":"CT 104"},{"date":"06/02/2026","day":"Viernes","shift":"CT 204"},{"date":"07/02/2026","day":"Sábado","shift":"D"},{"date":"08/02/2026","day":"Domingo","shift":"D"},{"date":"09/02/2026","day":"Lunes","shift":"CT 108"},{"date":"10/02/2026","day":"Martes","shift":"CT 108"},{"date":"11/02/2026","day":"Miércoles","shift":"D"},{"date":"12/02/2026","day":"Jueves","shift":"D"},{"date":"13/02/2026","day":"Viernes","shift":"CT 220"},{"date":"14/02/2026","day":"Sábado","shift":"CT 302"},{"date":"15/02/2026","day":"Domingo","shift":"DIS T"},{"date":"16/02/2026","day":"Lunes","shift":"D"},{"date":"17/02/2026","day":"Martes","shift":"CM 117"},{"date":"18/02/2026","day":"Miércoles","shift":"CM 118"},{"date":"19/02/2026","day":"Jueves","shift":"CM 110"},{"date":"20/02/2026","day":"Viernes","shift":"CM 218"},{"date":"21/02/2026","day":"Sábado","shift":"D"},{"date":"22/02/2026","day":"Domingo","shift":"D"},{"date":"23/02/2026","day":"Lunes","shift":"CT 102"},{"date":"24/02/2026","day":"Martes","shift":"RN 100"},{"date":"25/02/2026","day":"Miércoles","shift":"DIS T"},{"date":"26/02/2026","day":"Jueves","shift":"DIS T"},{"date":"27/02/2026","day":"Viernes","shift":"D"},{"date":"28/02/2026","day":"Sábado","shift":"D"},{"date":"01/03/2026","day":"Domingo","shift":"CM 408"},{"date":"02/03/2026","day":"Lunes","shift":"CM 116"},{"date":"03/03/2026","day":"Martes","shift":"CM 116"},{"date":"04/03/2026","day":"Miércoles","shift":"D"},{"date":"05/03/2026","day":"Jueves","shift":"D"},{"date":"06/03/2026","day":"Viernes","shift":"RN 200"},{"date":"07/03/2026","day":"Sábado","shift":"CT 319"},{"date":"08/03/2026","day":"Domingo","shift":"CT 414"},{"date":"09/03/2026","day":"Lunes","shift":"D"},{"date":"10/03/2026","day":"Martes","shift":"CT 117"},{"date":"11/03/2026","day":"Miércoles","shift":"CT 117"},{"date":"12/03/2026","day":"Jueves","shift":"CT 117"},{"date":"13/03/2026","day":"Viernes","shift":"CT 217"},{"date":"14/03/2026","day":"Sábado","shift":"D"},{"date":"15/03/2026","day":"Domingo","shift":"D"},{"date":"16/03/2026","day":"Lunes","shift":"CM 101"},{"date":"17/03/2026","day":"Martes","shift":"CM 101"},{"date":"18/03/2026","day":"Miércoles","shift":"CM 101"},{"date":"19/03/2026","day":"Jueves","shift":"D"},{"date":"20/03/2026","day":"Viernes","shift":"D"},{"date":"21/03/2026","day":"Sábado","shift":"CT 307"},{"date":"22/03/2026","day":"Domingo","shift":"CT 406"},{"date":"23/03/2026","day":"Lunes","shift":"CT 107"},{"date":"24/03/2026","day":"Martes","shift":"D"},{"date":"25/03/2026","day":"Miércoles","shift":"CT 106"},{"date":"26/03/2026","day":"Jueves","shift":"CT 106"},{"date":"27/03/2026","day":"Viernes","shift":"CT 206"},{"date":"28/03/2026","day":"Sábado","shift":"D"},{"date":"29/03/2026","day":"Domingo","shift":"D"},{"date":"30/03/2026","day":"Lunes","shift":"CM 211"},{"date":"31/03/2026","day":"Martes","shift":"CM 211"},{"date":"01/04/2026","day":"Miércoles","shift":"D"},{"date":"02/04/2026","day":"Jueves","shift":"CT 1524"},{"date":"03/04/2026","day":"Viernes","shift":"CT 1624"},{"date":"04/04/2026","day":"Sábado","shift":"CT 1320"},{"date":"05/04/2026","day":"Domingo","shift":"DIS T"},{"date":"06/04/2026","day":"Lunes","shift":"D"},{"date":"07/04/2026","day":"Martes","shift":"CT 123"},{"date":"08/04/2026","day":"Miércoles","shift":"CT 123"},{"date":"09/04/2026","day":"Jueves","shift":"CT 119"},{"date":"10/04/2026","day":"Viernes","shift":"CT 219"},{"date":"11/04/2026","day":"Sábado","shift":"D"},{"date":"12/04/2026","day":"Domingo","shift":"D"},{"date":"13/04/2026","day":"Lunes","shift":"VL"},{"date":"14/04/2026","day":"Martes","shift":"VL"},{"date":"15/04/2026","day":"Miércoles","shift":"VL"},{"date":"16/04/2026","day":"Jueves","shift":"VL"},{"date":"17/04/2026","day":"Viernes","shift":"VL"},{"date":"18/04/2026","day":"Sábado","shift":"VN"},{"date":"19/04/2026","day":"Domingo","shift":"VN"},{"date":"20/04/2026","day":"Lunes","shift":"CT 123"},{"date":"21/04/2026","day":"Martes","shift":"D"},{"date":"22/04/2026","day":"Miércoles","shift":"D"},{"date":"23/04/2026","day":"Jueves","shift":"CM 105"},{"date":"24/04/2026","day":"Viernes","shift":"CM 205"},{"date":"25/04/2026","day":"Sábado","shift":"CM 305"},{"date":"26/04/2026","day":"Domingo","shift":"CM 406"},{"date":"27/04/2026","day":"Lunes","shift":"D"},{"date":"28/04/2026","day":"Martes","shift":"CT 107"},{"date":"29/04/2026","day":"Miércoles","shift":"CT 107"},{"date":"30/04/2026","day":"Jueves","shift":"CT 207"},{"date":"01/05/2026","day":"Viernes","shift":"D"},{"date":"02/05/2026","day":"Sábado","shift":"D"},{"date":"03/05/2026","day":"Domingo","shift":"D"},{"date":"04/05/2026","day":"Lunes","shift":"CM 103"},{"date":"05/05/2026","day":"Martes","shift":"CM 103"},{"date":"06/05/2026","day":"Miércoles","shift":"CM 103"},{"date":"07/05/2026","day":"Jueves","shift":"D"},{"date":"08/05/2026","day":"Viernes","shift":"D"},{"date":"09/05/2026","day":"Sábado","shift":"CT 303"},{"date":"10/05/2026","day":"Domingo","shift":"CT 408"},{"date":"11/05/2026","day":"Lunes","shift":"CT 112"},{"date":"12/05/2026","day":"Martes","shift":"D"},{"date":"13/05/2026","day":"Miércoles","shift":"CT 105"},{"date":"14/05/2026","day":"Jueves","shift":"CT 105"},{"date":"15/05/2026","day":"Viernes","shift":"CT 205"},{"date":"16/05/2026","day":"Sábado","shift":"D"},{"date":"17/05/2026","day":"Domingo","shift":"D"},{"date":"18/05/2026","day":"Lunes","shift":"D"},{"date":"19/05/2026","day":"Martes","shift":"CT 125"},{"date":"20/05/2026","day":"Miércoles","shift":"D"},{"date":"21/05/2026","day":"Jueves","shift":"CT 116"},{"date":"22/05/2026","day":"Viernes","shift":"CT 212"},{"date":"23/05/2026","day":"Sábado","shift":"CT 309"},{"date":"24/05/2026","day":"Domingo","shift":"CT 407"},{"date":"25/05/2026","day":"Lunes","shift":"D"},{"date":"26/05/2026","day":"Martes","shift":"CT 115"},{"date":"27/05/2026","day":"Miércoles","shift":"CT 115"},{"date":"28/05/2026","day":"Jueves","shift":"CT 115"},{"date":"29/05/2026","day":"Viernes","shift":"CT 215"},{"date":"30/05/2026","day":"Sábado","shift":"D"},{"date":"31/05/2026","day":"Domingo","shift":"D"},{"date":"01/06/2026","day":"Lunes","shift":"CM 218"},{"date":"02/06/2026","day":"Martes","shift":"CM 218"},{"date":"03/06/2026","day":"Miércoles","shift":"CM 2216"},{"date":"04/06/2026","day":"Jueves","shift":"D"},{"date":"05/06/2026","day":"Viernes","shift":"D"},{"date":"06/06/2026","day":"Sábado","shift":"CT 2711"},{"date":"07/06/2026","day":"Domingo","shift":"CT 2805"},{"date":"08/06/2026","day":"Lunes","shift":"CT 105"},{"date":"09/06/2026","day":"Martes","shift":"CT 105"},{"date":"10/06/2026","day":"Miércoles","shift":"D"},{"date":"11/06/2026","day":"Jueves","shift":"CM 111"},{"date":"12/06/2026","day":"Viernes","shift":"CM 211"},{"date":"13/06/2026","day":"Sábado","shift":"RT 300"},{"date":"14/06/2026","day":"Domingo","shift":"D"},{"date":"15/06/2026","day":"Lunes","shift":"D"},{"date":"16/06/2026","day":"Martes","shift":"CT 109"},{"date":"17/06/2026","day":"Miércoles","shift":"CT 109"},{"date":"18/06/2026","day":"Jueves","shift":"CT 109"},{"date":"19/06/2026","day":"Viernes","shift":"CT 209"},{"date":"20/06/2026","day":"Sábado","shift":"D"},{"date":"21/06/2026","day":"Domingo","shift":"D"},{"date":"22/06/2026","day":"Lunes","shift":"CM 102"},{"date":"23/06/2026","day":"Martes","shift":"CM 102"},{"date":"24/06/2026","day":"Miércoles","shift":"CM 102"},{"date":"25/06/2026","day":"Jueves","shift":"D"},{"date":"26/06/2026","day":"Viernes","shift":"D"},{"date":"27/06/2026","day":"Sábado","shift":"RT 300"},{"date":"28/06/2026","day":"Domingo","shift":"CT 404"},{"date":"29/06/2026","day":"Lunes","shift":"CT 104"},{"date":"30/06/2026","day":"Martes","shift":"D"},{"date":"01/07/2026","day":"Miércoles","shift":"CT 503"},{"date":"02/07/2026","day":"Jueves","shift":"CT 503"},{"date":"03/07/2026","day":"Viernes","shift":"CT 610"},{"date":"04/07/2026","day":"Sábado","shift":"D"},{"date":"05/07/2026","day":"Domingo","shift":"D"},{"date":"06/07/2026","day":"Lunes","shift":"CM 505"},{"date":"07/07/2026","day":"Martes","shift":"CM 505"},{"date":"08/07/2026","day":"Miércoles","shift":"D"},{"date":"09/07/2026","day":"Jueves","shift":"DIS MT"},{"date":"10/07/2026","day":"Viernes","shift":"CT 618"},{"date":"11/07/2026","day":"Sábado","shift":"CT 318"},{"date":"12/07/2026","day":"Domingo","shift":"CT 413"},{"date":"13/07/2026","day":"Lunes","shift":"D"},{"date":"14/07/2026","day":"Martes","shift":"CT 511"},{"date":"15/07/2026","day":"Miércoles","shift":"CT 507"},{"date":"16/07/2026","day":"Jueves","shift":"RT 500"},{"date":"17/07/2026","day":"Viernes","shift":"CT 604"},{"date":"18/07/2026","day":"Sábado","shift":"D"},{"date":"19/07/2026","day":"Domingo","shift":"D"},{"date":"20/07/2026","day":"Lunes","shift":"LD"},{"date":"21/07/2026","day":"Martes","shift":"DN"},{"date":"22/07/2026","day":"Miércoles","shift":"DN"},{"date":"23/07/2026","day":"Jueves","shift":"D"},{"date":"24/07/2026","day":"Viernes","shift":"D"},{"date":"25/07/2026","day":"Sábado","shift":"CT 318"},{"date":"26/07/2026","day":"Domingo","shift":"DIS T"},{"date":"27/07/2026","day":"Lunes","shift":"CT 503"},{"date":"28/07/2026","day":"Martes","shift":"D"},{"date":"29/07/2026","day":"Miércoles","shift":"D"},{"date":"30/07/2026","day":"Jueves","shift":"CM 504"},{"date":"31/07/2026","day":"Viernes","shift":"CM 604"},{"date":"01/08/2026","day":"Sábado","shift":"CM 304"},{"date":"02/08/2026","day":"Domingo","shift":"CM 406"},{"date":"03/08/2026","day":"Lunes","shift":"D"},{"date":"04/08/2026","day":"Martes","shift":"CT 517"},{"date":"05/08/2026","day":"Miércoles","shift":"CT 517"},{"date":"06/08/2026","day":"Jueves","shift":"CT 517"},{"date":"07/08/2026","day":"Viernes","shift":"CT 610"},{"date":"08/08/2026","day":"Sábado","shift":"D"},{"date":"09/08/2026","day":"Domingo","shift":"D"},{"date":"10/08/2026","day":"Lunes","shift":"CT 509"},{"date":"11/08/2026","day":"Martes","shift":"CT 514"},{"date":"12/08/2026","day":"Miércoles","shift":"CT 504"},{"date":"13/08/2026","day":"Jueves","shift":"D"},{"date":"14/08/2026","day":"Viernes","shift":"D"},{"date":"15/08/2026","day":"Sábado","shift":"CT 320"},{"date":"16/08/2026","day":"Domingo","shift":"CT 413"},{"date":"17/08/2026","day":"Lunes","shift":"CT 510"},{"date":"18/08/2026","day":"Martes","shift":"D"},{"date":"19/08/2026","day":"Miércoles","shift":"RM 500"},{"date":"20/08/2026","day":"Jueves","shift":"CM 503"},{"date":"21/08/2026","day":"Viernes","shift":"RM 600"},{"date":"22/08/2026","day":"Sábado","shift":"D"},{"date":"23/08/2026","day":"Domingo","shift":"D"},{"date":"24/08/2026","day":"Lunes","shift":"CM 510"},{"date":"25/08/2026","day":"Martes","shift":"CM 510"},{"date":"26/08/2026","day":"Miércoles","shift":"D"},{"date":"27/08/2026","day":"Jueves","shift":"CM 504"},{"date":"28/08/2026","day":"Viernes","shift":"CM 604"},{"date":"29/08/2026","day":"Sábado","shift":"CM 304"},{"date":"30/08/2026","day":"Domingo","shift":"VN"},{"date":"31/08/2026","day":"Lunes","shift":"VL"},{"date":"01/09/2026","day":"Martes","shift":"VL"},{"date":"02/09/2026","day":"Miércoles","shift":"VL"},{"date":"03/09/2026","day":"Jueves","shift":"VL"},{"date":"04/09/2026","day":"Viernes","shift":"VL"},{"date":"05/09/2026","day":"Sábado","shift":"VN"},{"date":"06/09/2026","day":"Domingo","shift":"VN"},{"date":"07/09/2026","day":"Lunes","shift":"VL"},{"date":"08/09/2026","day":"Martes","shift":"VL"},{"date":"09/09/2026","day":"Miércoles","shift":"VL"},{"date":"10/09/2026","day":"Jueves","shift":"VL"},{"date":"11/09/2026","day":"Viernes","shift":"VL"},{"date":"12/09/2026","day":"Sábado","shift":"VN"},{"date":"13/09/2026","day":"Domingo","shift":"VN"},{"date":"14/09/2026","day":"Lunes","shift":"CT 119"},{"date":"15/09/2026","day":"Martes","shift":"D"},{"date":"16/09/2026","day":"Miércoles","shift":"D"},{"date":"17/09/2026","day":"Jueves","shift":"CM 112"},{"date":"18/09/2026","day":"Viernes","shift":"CM 212"},{"date":"19/09/2026","day":"Sábado","shift":"CM 308"},{"date":"20/09/2026","day":"Domingo","shift":"CM 403"},{"date":"21/09/2026","day":"Lunes","shift":"D"},{"date":"22/09/2026","day":"Martes","shift":"CT 102"},{"date":"23/09/2026","day":"Miércoles","shift":"CT 102"},{"date":"24/09/2026","day":"Jueves","shift":"CT 102"},{"date":"25/09/2026","day":"Viernes","shift":"CT 203"},{"date":"26/09/2026","day":"Sábado","shift":"D"},{"date":"27/09/2026","day":"Domingo","shift":"D"},{"date":"28/09/2026","day":"Lunes","shift":"DIS M"},{"date":"29/09/2026","day":"Martes","shift":"RM 100"},{"date":"30/09/2026","day":"Miércoles","shift":"CM 112"},{"date":"01/10/2026","day":"Jueves","shift":"D"},{"date":"02/10/2026","day":"Viernes","shift":"D"},{"date":"03/10/2026","day":"Sábado","shift":"CM 311"},{"date":"04/10/2026","day":"Domingo","shift":"CM 407"},{"date":"05/10/2026","day":"Lunes","shift":"CT 105"},{"date":"06/10/2026","day":"Martes","shift":"D"},{"date":"07/10/2026","day":"Miércoles","shift":"DIS MT"},{"date":"08/10/2026","day":"Jueves","shift":"RM 100"},{"date":"09/10/2026","day":"Viernes","shift":"CM 208"},{"date":"10/10/2026","day":"Sábado","shift":"D"},{"date":"11/10/2026","day":"Domingo","shift":"D"},{"date":"12/10/2026","day":"Lunes","shift":"VL"},{"date":"13/10/2026","day":"Martes","shift":"VL"},{"date":"14/10/2026","day":"Miércoles","shift":"VL"},{"date":"15/10/2026","day":"Jueves","shift":"VL"},{"date":"16/10/2026","day":"Viernes","shift":"VL"},{"date":"17/10/2026","day":"Sábado","shift":"VN"},{"date":"18/10/2026","day":"Domingo","shift":"VN"},{"date":"19/10/2026","day":"Lunes","shift":"D"},{"date":"20/10/2026","day":"Martes","shift":"CT 112"},{"date":"21/10/2026","day":"Miércoles","shift":"CT 112"},{"date":"22/10/2026","day":"Jueves","shift":"CT 110"},{"date":"23/10/2026","day":"Viernes","shift":"CT 213"},{"date":"24/10/2026","day":"Sábado","shift":"D"},{"date":"25/10/2026","day":"Domingo","shift":"D"},{"date":"26/10/2026","day":"Lunes","shift":"CT 123"},{"date":"27/10/2026","day":"Martes","shift":"CT 109"},{"date":"28/10/2026","day":"Miércoles","shift":"CT 109"},{"date":"29/10/2026","day":"Jueves","shift":"CT 109"},{"date":"30/10/2026","day":"Viernes","shift":"RT 200"},{"date":"31/10/2026","day":"Sábado","shift":"D"},{"date":"01/11/2026","day":"Domingo","shift":"CT 309"},{"date":"02/11/2026","day":"Lunes","shift":"CT 407"},{"date":"03/11/2026","day":"Martes","shift":"D"},{"date":"04/11/2026","day":"Miércoles","shift":"D"},{"date":"05/11/2026","day":"Jueves","shift":"CT 124"},{"date":"06/11/2026","day":"Viernes","shift":"CT 224"},{"date":"07/11/2026","day":"Sábado","shift":"CT 318"},{"date":"08/11/2026","day":"Domingo","shift":"CT 411"},{"date":"09/11/2026","day":"Lunes","shift":"D"},{"date":"10/11/2026","day":"Martes","shift":"CT 124"},{"date":"11/11/2026","day":"Miércoles","shift":"CT 124"},{"date":"12/11/2026","day":"Jueves","shift":"CT 112"},{"date":"13/11/2026","day":"Viernes","shift":"RT 200"},{"date":"14/11/2026","day":"Sábado","shift":"D"},{"date":"15/11/2026","day":"Domingo","shift":"D"},{"date":"16/11/2026","day":"Lunes","shift":"CM 115"},{"date":"17/11/2026","day":"Martes","shift":"DIS M"},{"date":"18/11/2026","day":"Miércoles","shift":"CM 111"},{"date":"19/11/2026","day":"Jueves","shift":"D"},{"date":"20/11/2026","day":"Viernes","shift":"D"},{"date":"21/11/2026","day":"Sábado","shift":"CT 316"},{"date":"22/11/2026","day":"Domingo","shift":"CT 409"},{"date":"23/11/2026","day":"Lunes","shift":"CT 106"},{"date":"24/11/2026","day":"Martes","shift":"D"},{"date":"25/11/2026","day":"Miércoles","shift":"CM 110"},{"date":"26/11/2026","day":"Jueves","shift":"CM 114"},{"date":"27/11/2026","day":"Viernes","shift":"CM 214"},{"date":"28/11/2026","day":"Sábado","shift":"D"},{"date":"29/11/2026","day":"Domingo","shift":"D"},{"date":"30/11/2026","day":"Lunes","shift":"CT 124"},{"date":"01/12/2026","day":"Martes","shift":"D"},{"date":"02/12/2026","day":"Miércoles","shift":"D"},{"date":"03/12/2026","day":"Jueves","shift":"CT 113"},{"date":"04/12/2026","day":"Viernes","shift":"CT 225"},{"date":"05/12/2026","day":"Sábado","shift":"CT 319"},{"date":"06/12/2026","day":"Domingo","shift":"CT 319"},{"date":"07/12/2026","day":"Lunes","shift":"D"},{"date":"08/12/2026","day":"Martes","shift":"D"},{"date":"09/12/2026","day":"Miércoles","shift":"CT 101"},{"date":"10/12/2026","day":"Jueves","shift":"CT 101"},{"date":"11/12/2026","day":"Viernes","shift":"CT 201"},{"date":"12/12/2026","day":"Sábado","shift":"D"},{"date":"13/12/2026","day":"Domingo","shift":"D"},{"date":"14/12/2026","day":"Lunes","shift":"CM 4109"},{"date":"15/12/2026","day":"Martes","shift":"CM 4109"},{"date":"16/12/2026","day":"Miércoles","shift":"CM 4109"},{"date":"17/12/2026","day":"Jueves","shift":"CM 4409"},{"date":"18/12/2026","day":"Viernes","shift":"D"},{"date":"19/12/2026","day":"Sábado","shift":"CT 4301"},{"date":"20/12/2026","day":"Domingo","shift":"CT 401"},{"date":"21/12/2026","day":"Lunes","shift":"CT 4101"},{"date":"22/12/2026","day":"Martes","shift":"D"},{"date":"23/12/2026","day":"Miércoles","shift":"D"},{"date":"24/12/2026","day":"Jueves","shift":"DIS M"},{"date":"25/12/2026","day":"Viernes","shift":"CM 307"},{"date":"26/12/2026","day":"Sábado","shift":"CM 307"},{"date":"27/12/2026","day":"Domingo","shift":"D"},{"date":"28/12/2026","day":"Lunes","shift":"D"},{"date":"29/12/2026","day":"Martes","shift":"DIS M"},{"date":"30/12/2026","day":"Miércoles","shift":"CM 117"},{"date":"31/12/2026","day":"Jueves","shift":"CM 4817"}];
+
+// Build lookup
+const byDate = {};
+SCHEDULE.forEach(s => { byDate[s.date] = s; });
+
+// Today
+const TODAY = new Date(2026, 2, 7); // March 7, 2026
+const todayStr = `${String(TODAY.getDate()).padStart(2,'0')}/${String(TODAY.getMonth()+1).padStart(2,'0')}/2026`;
+
+// State
+let currentView = 'calendar';
+let currentMonth = 2; // 0-indexed → March
+let currentYear = 2026;
+let currentWeekStart = getWeekStart(TODAY);
+let activeFilter = 'all';
+
+const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const DAYS_ES = ['Lu','Ma','Mi','Ju','Vi','Sá','Do'];
+
+function getShiftClass(shift) {
+  if (!shift || shift === 'D') return 'type-d';
+  const s = shift.toUpperCase();
+  if (s.startsWith('CT')) return 'type-ct';
+  if (s.startsWith('CM')) return 'type-cm';
+  if (s.startsWith('RM')) return 'type-rm';
+  if (s.startsWith('RN')) return 'type-rn';
+  if (s.startsWith('RT')) return 'type-rt';
+  if (s.startsWith('DIS')) return 'type-dis';
+  if (s === 'VL') return 'type-vl';
+  if (s === 'VN') return 'type-vn';
+  if (s === 'DN') return 'type-dn';
+  if (s === 'LD') return 'type-ld';
+  if (s === 'DR') return 'type-dr';
+  return 'type-d';
+}
+
+function matchesFilter(shift) {
+  if (activeFilter === 'all') return true;
+  const s = (shift || '').toUpperCase();
+  if (activeFilter === 'ct') return s.startsWith('CT');
+  if (activeFilter === 'cm') return s.startsWith('CM');
+  if (activeFilter === 'vl') return s === 'VL' || s === 'VN';
+  if (activeFilter === 'rm') return s.startsWith('RM') || s.startsWith('RN') || s.startsWith('RT');
+  if (activeFilter === 'dis') return s.startsWith('DIS');
+  if (activeFilter === 'd') return s === 'D' || s === 'DR' || s === 'DN' || s === 'LD';
+  return true;
+}
+
+function setFilter(f, el) {
+  activeFilter = f;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+function setView(v) {
+  currentView = v;
+  document.querySelectorAll('.view-tab').forEach((t,i) => {
+    t.classList.toggle('active', ['calendar','list','week','stats'][i] === v);
+  });
+  document.getElementById('monthNav').style.display = (v === 'calendar' || v === 'list') ? 'flex' : 'none';
+  document.getElementById('weekNav').style.display = v === 'week' ? 'flex' : 'none';
+  render();
+}
+
+function changeMonth(d) {
+  currentMonth += d;
+  if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+  if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+  render();
+}
+
+function getWeekStart(date) {
+  const d = new Date(date);
+  const day = d.getDay(); // 0=Sun
+  const diff = (day === 0) ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  return d;
+}
+
+function changeWeek(d) {
+  currentWeekStart.setDate(currentWeekStart.getDate() + d * 7);
+  render();
+}
+
+function dateToStr(d) {
+  return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+}
+
+function updateStats() {
+  let ct=0, cm=0, vl=0, dis=0, rest=0, rm=0;
+  SCHEDULE.forEach(s => {
+    const sh = (s.shift||'').toUpperCase();
+    if (sh.startsWith('CT')) ct++;
+    else if (sh.startsWith('CM')) cm++;
+    else if (sh === 'VL' || sh === 'VN') vl++;
+    else if (sh.startsWith('DIS')) dis++;
+    else if (sh === 'D' || sh === 'DR' || sh === 'DN' || sh === 'LD') rest++;
+    else if (sh.startsWith('RM') || sh.startsWith('RN') || sh.startsWith('RT')) rm++;
+  });
+  document.getElementById('s-ct').textContent = ct;
+  document.getElementById('s-cm').textContent = cm;
+  document.getElementById('s-vl').textContent = vl;
+  document.getElementById('s-dis').textContent = dis;
+  document.getElementById('s-d').textContent = rest;
+  document.getElementById('s-rm').textContent = rm;
+}
+
+function updateTodayBadge() {
+  const t = byDate[todayStr];
+  const shift = t ? t.shift : 'D';
+  document.getElementById('todayBadge').innerHTML = 
+    `Hoy (${todayStr}): <strong style="color:var(--accent)">${shift}</strong>`;
+}
+
+function getSearch() {
+  return document.getElementById('searchInput').value.trim().toUpperCase();
+}
+
+function renderCalendar() {
+  document.getElementById('monthLabel').textContent = `${MONTHS_ES[currentMonth]} ${currentYear}`;
+
+  const firstDay = new Date(currentYear, currentMonth, 1);
+  let startDow = firstDay.getDay(); // 0=Sun
+  if (startDow === 0) startDow = 6; else startDow--;
+
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  const search = getSearch();
+
+  let html = '<div class="calendar-grid">';
+  DAYS_ES.forEach(d => html += `<div class="cal-header">${d}</div>`);
+
+  for (let i = 0; i < startDow; i++) html += '<div class="cal-day empty"></div>';
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${String(d).padStart(2,'0')}/${String(currentMonth+1).padStart(2,'0')}/${currentYear}`;
+    const entry = byDate[dateStr];
+    const shift = entry ? entry.shift : '';
+    const isToday = dateStr === todayStr;
+    const cls = getShiftClass(shift);
+    const passes = matchesFilter(shift) && (!search || shift.toUpperCase().includes(search));
+
+    html += `<div class="cal-day ${isToday ? 'today' : ''}" style="${!passes && shift ? 'opacity:0.25' : ''}">
+      <span class="day-num">${d}</span>`;
+    if (shift && shift !== 'D') {
+      html += `<span class="shift-badge ${cls}">${shift}</span>`;
+    } else if (shift === 'D') {
+      html += `<span style="font-size:0.6rem;color:var(--text-muted)">D</span>`;
+    }
+    html += '</div>';
+  }
+
+  html += '</div>';
+  document.getElementById('content').innerHTML = html;
+}
+
+function renderList() {
+  document.getElementById('monthLabel').textContent = `${MONTHS_ES[currentMonth]} ${currentYear}`;
+  const search = getSearch();
+  const filtered = SCHEDULE.filter(s => {
+    const [dd, mm, yy] = s.date.split('/').map(Number);
+    if (mm - 1 !== currentMonth || yy !== currentYear) return false;
+    if (!matchesFilter(s.shift)) return false;
+    if (search && !s.shift.toUpperCase().includes(search)) return false;
+    return true;
+  });
+
+  let html = `<div class="section-title">${filtered.length} días · ${MONTHS_ES[currentMonth]}</div><div class="list-view">`;
+  filtered.forEach(s => {
+    const isToday = s.date === todayStr;
+    const cls = getShiftClass(s.shift);
+    html += `<div class="list-item ${isToday ? 'today' : ''}">
+      <span class="list-date">${s.date}</span>
+      <span class="list-day">${s.day}</span>
+      <span class="list-shift ${cls}">${s.shift}</span>
+      <span style="font-size:0.65rem;color:var(--text-muted)">${getShiftDesc(s.shift)}</span>
+    </div>`;
+  });
+  html += '</div>';
+  document.getElementById('content').innerHTML = html;
+}
+
+function getShiftDesc(s) {
+  const u = (s||'').toUpperCase();
+  if (u === 'D') return 'Día de descanso';
+  if (u === 'DR') return 'Descanso rodante';
+  if (u === 'DN') return 'Descanso nocturno';
+  if (u === 'LD') return 'Libre disposición';
+  if (u === 'VL') return 'Vacaciones laborables';
+  if (u === 'VN') return 'Vacaciones no laborables';
+  if (u.startsWith('DIS')) return 'Disponible';
+  if (u.startsWith('RM')) return 'Reserva mañana';
+  if (u.startsWith('RN')) return 'Reserva noche';
+  if (u.startsWith('RT')) return 'Reserva tarde';
+  if (u.startsWith('CT')) return 'Turno CT';
+  if (u.startsWith('CM')) return 'Turno CM';
+  return '';
+}
+
+function renderWeek() {
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(currentWeekStart);
+    d.setDate(d.getDate() + i);
+    days.push(d);
+  }
+  const from = dateToStr(days[0]);
+  const to = dateToStr(days[6]);
+  document.getElementById('weekLabel').textContent = `${from} — ${to}`;
+
+  const search = getSearch();
+  let html = '<div class="week-view">';
+  days.forEach((d, i) => {
+    const ds = dateToStr(d);
+    const entry = byDate[ds];
+    const shift = entry ? entry.shift : '';
+    const isToday = ds === todayStr;
+    const cls = getShiftClass(shift);
+    const passes = matchesFilter(shift) && (!search || (shift && shift.toUpperCase().includes(search)));
+    html += `<div class="week-col ${isToday ? 'today-col' : ''}">
+      <div class="week-col-header">
+        <div class="wday">${DAYS_ES[i]}</div>
+        <div class="wdate">${d.getDate()}</div>
+        <div style="font-size:0.6rem;color:var(--text-muted)">${MONTHS_ES[d.getMonth()].substring(0,3)}</div>
+      </div>
+      <div class="week-shift ${cls}" style="${!passes && shift ? 'opacity:0.2' : ''}">
+        ${shift || '—'}
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+  document.getElementById('content').innerHTML = html;
+}
+
+function renderStats() {
+  const freq = {};
+  let workDays = 0, restDays = 0, vacDays = 0, disDays = 0;
+  SCHEDULE.forEach(s => {
+    const sh = s.shift || 'D';
+    freq[sh] = (freq[sh] || 0) + 1;
+    const u = sh.toUpperCase();
+    if (u.startsWith('CT') || u.startsWith('CM')) workDays++;
+    else if (u === 'VL' || u === 'VN') vacDays++;
+    else if (u.startsWith('DIS')) disDays++;
+    else restDays++;
+  });
+
+  const sortedFreq = Object.entries(freq).sort((a,b) => b[1]-a[1]).slice(0,20);
+  const maxFreq = sortedFreq[0][1];
+
+  // Monthly work counts
+  const monthWork = Array(12).fill(0);
+  SCHEDULE.forEach(s => {
+    const [dd, mm] = s.date.split('/').map(Number);
+    const u = (s.shift||'').toUpperCase();
+    if (u.startsWith('CT') || u.startsWith('CM')) monthWork[mm-1]++;
+  });
+
+  let html = `
+  <div class="section-title">Resumen anual</div>
+  <div class="stats-view" style="margin-bottom:24px">
+    <div class="stat-card">
+      <div class="stat-card-title">Días trabajados</div>
+      <div class="stat-card-val" style="color:#4f9cf9">${workDays}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-title">Días de descanso</div>
+      <div class="stat-card-val" style="color:#475569">${restDays}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-title">Vacaciones</div>
+      <div class="stat-card-val" style="color:#34d399">${vacDays}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-title">Disponibilidades</div>
+      <div class="stat-card-val" style="color:#fb923c">${disDays}</div>
+    </div>
+  </div>
+
+  <div class="section-title">Turnos por mes</div>
+  <div style="display:flex;gap:4px;align-items:flex-end;height:100px;margin-bottom:24px;background:var(--surface);padding:16px;border-radius:10px;border:1px solid var(--border)">
+  ${monthWork.map((v,i) => {
+    const h = Math.round((v / Math.max(...monthWork)) * 68);
+    const isCurr = i === currentMonth;
+    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+      <div style="font-size:0.55rem;color:var(--text-muted)">${v}</div>
+      <div style="width:100%;height:${h}px;background:${isCurr ? 'var(--accent)' : 'var(--accent2)'};border-radius:3px 3px 0 0;opacity:${isCurr?1:0.6}"></div>
+      <div style="font-size:0.55rem;color:var(--text-muted)">${MONTHS_ES[i].substring(0,3)}</div>
+    </div>`;
+  }).join('')}
+  </div>
+
+  <div class="section-title">Turnos más frecuentes</div>
+  <div class="stat-card" style="max-width:400px">
+    <div class="shift-freq-list">
+    ${sortedFreq.map(([k,v]) => `
+      <div class="freq-row">
+        <span class="freq-label"><span class="shift-badge ${getShiftClass(k)}" style="font-size:0.65rem">${k}</span></span>
+        <div class="freq-bar-bg"><div class="freq-bar" style="width:${Math.round(v/maxFreq*100)}%"></div></div>
+        <span class="freq-count">${v}</span>
+      </div>`).join('')}
+    </div>
+  </div>`;
+  document.getElementById('content').innerHTML = html;
+}
+
+function render() {
+  if (currentView === 'calendar') renderCalendar();
+  else if (currentView === 'list') renderList();
+  else if (currentView === 'week') renderWeek();
+  else if (currentView === 'stats') renderStats();
+}
+
+
+// ─── EDIT SYSTEM ───────────────────────────────────────────────
+
+// All unique shifts from the schedule, sorted
+const ALL_SHIFTS = [...new Set(SCHEDULE.map(s => s.shift))].sort((a,b) => {
+  // Group by prefix
+  const pref = s => {
+    if (s.startsWith('CT')) return '1';
+    if (s.startsWith('CM')) return '2';
+    if (s.startsWith('RM')) return '3';
+    if (s.startsWith('RN')) return '4';
+    if (s.startsWith('RT')) return '5';
+    if (s.startsWith('DIS')) return '6';
+    if (s === 'VL' || s === 'VN') return '7';
+    return '8';
+  };
+  return (pref(a) + a).localeCompare(pref(b) + b);
+});
+
+// Manual additions for common shifts not in schedule
+const EXTRA_SHIFTS = ['D','DR','DN','LD','VL','VN','DIS M','DIS MT','DIS T','RM 100','RM 200','RM 300','RM 400','RM 500','RM 600','RN 100','RN 200','RT 100','RT 200','RT 300','RT 400','RT 500','RT 600'];
+const ALL_SHIFT_OPTIONS = [...new Set([...ALL_SHIFTS, ...EXTRA_SHIFTS])].sort((a,b) => {
+  const pref = s => {
+    if (s.startsWith('CT')) return '1';
+    if (s.startsWith('CM')) return '2';
+    if (s.startsWith('RM')) return '3';
+    if (s.startsWith('RN')) return '4';
+    if (s.startsWith('RT')) return '5';
+    if (s.startsWith('DIS')) return '6';
+    if (s === 'VL' || s === 'VN') return '7';
+    return '8';
+  };
+  return (pref(a) + a).localeCompare(pref(b) + b);
+});
+
+// Track modifications { date: newShift } — persisted in localStorage
+const SHIFT_SCHEDULES = {
+  lunes: {
+    'CM 101': { entrada: '05:20', salida: '13:38', horas: 8.3 },
+    'CM 102': { entrada: '05:30', salida: '13:46', horas: 8.27 },
+    'CM 103': { entrada: '05:35', salida: '13:52', horas: 8.28 },
+    'CM 104': { entrada: '05:38', salida: '13:54', horas: 8.27 },
+    'CM 105': { entrada: '05:40', salida: '14:02', horas: 8.37 },
+    'CM 106': { entrada: '05:49', salida: '14:10', horas: 8.35 },
+    'CM 107': { entrada: '05:51', salida: '14:07', horas: 8.27 },
+    'CM 108': { entrada: '05:54', salida: '13:37', horas: 7.72 },
+    'CM 109': { entrada: '05:58', salida: '13:58', horas: 8.0 },
+    'CM 110': { entrada: '06:01', salida: '14:17', horas: 8.27 },
+    'CM 111': { entrada: '06:07', salida: '14:23', horas: 8.27 },
+    'CM 112': { entrada: '06:08', salida: '14:36', horas: 8.47 },
+    'CM 113': { entrada: '06:13', salida: '14:34', horas: 8.35 },
+    'CM 114': { entrada: '06:16', salida: '14:30', horas: 8.23 },
+    'CM 115': { entrada: '06:40', salida: '14:49', horas: 8.15 },
+    'CM 116': { entrada: '06:41', salida: '15:03', horas: 8.37 },
+    'CM 117': { entrada: '07:21', salida: '15:11', horas: 7.83 },
+    'CT 101': { entrada: '13:06', salida: '21:02', horas: 7.93 },
+    'CT 102': { entrada: '13:19', salida: '21:22', horas: 8.05 },
+    'CT 103': { entrada: '13:37', salida: '21:26', horas: 7.82 },
+    'CT 104': { entrada: '13:42', salida: '21:35', horas: 7.88 },
+    'CT 105': { entrada: '13:45', salida: '21:19', horas: 7.57 },
+    'CT 106': { entrada: '13:51', salida: '20:41', horas: 6.83 },
+    'CT 107': { entrada: '13:50', salida: '21:48', horas: 7.97 },
+    'CT 108': { entrada: '13:57', salida: '22:20', horas: 8.38 },
+    'CT 109': { entrada: '14:01', salida: '22:23', horas: 8.37 },
+    'CT 110': { entrada: '14:07', salida: '22:31', horas: 8.4 },
+    'CT 111': { entrada: '14:11', salida: '22:36', horas: 8.42 },
+    'CT 112': { entrada: '14:24', salida: '22:23', horas: 7.98 },
+    'CT 113': { entrada: '14:49', salida: '23:05', horas: 8.27 },
+    'CT 114': { entrada: '14:56', salida: '23:01', horas: 8.08 },
+    'CT 115': { entrada: '15:03', salida: '23:33', horas: 8.5 },
+    'CT 116': { entrada: '15:40', salida: '00:01', horas: 8.35 },
+    'CT 117': { entrada: '15:42', salida: '23:47', horas: 8.08 },
+    'CT 118': { entrada: '15:37', salida: '00:09', horas: 8.53 },
+    'CT 119': { entrada: '15:58', salida: '00:10', horas: 8.2 },
+    'CT 120': { entrada: '15:58', salida: '00:18', horas: 8.33 },
+    'CT 121': { entrada: '16:21', salida: '00:43', horas: 8.37 },
+    'CT 122': { entrada: '17:42', salida: '00:35', horas: 6.88 },
+    'CT 123': { entrada: '18:52', salida: '00:52', horas: 6.0 },
+    'CT 124': { entrada: '18:56', salida: '00:56', horas: 6.0 },
+    'CT 125': { entrada: '20:00', salida: '04:00', horas: 8.0 },
+    'RM 100': { entrada: '05:42', salida: '13:42', horas: 8.0 },
+    'RN 100': { entrada: '22:00', salida: '06:00', horas: 8.0 },
+    'RT 100': { entrada: '13:54', salida: '21:54', horas: 8.0 },
+  },
+  viernes: {
+    'CM 201': { entrada: '05:20', salida: '13:38', horas: 8.3 },
+    'CM 202': { entrada: '05:30', salida: '13:18', horas: 7.8 },
+    'CM 203': { entrada: '05:35', salida: '13:53', horas: 8.3 },
+    'CM 204': { entrada: '05:38', salida: '14:07', horas: 8.48 },
+    'CM 205': { entrada: '05:40', salida: '14:02', horas: 8.37 },
+    'CM 206': { entrada: '05:42', salida: '13:46', horas: 8.07 },
+    'CM 207': { entrada: '05:49', salida: '14:09', horas: 8.33 },
+    'CM 208': { entrada: '05:51', salida: '14:18', horas: 8.45 },
+    'CM 209': { entrada: '05:54', salida: '13:39', horas: 7.75 },
+    'CM 210': { entrada: '05:58', salida: '14:28', horas: 8.5 },
+    'CM 211': { entrada: '05:58', salida: '14:11', horas: 8.22 },
+    'CM 212': { entrada: '06:07', salida: '14:14', horas: 8.12 },
+    'CM 213': { entrada: '06:08', salida: '14:32', horas: 8.4 },
+    'CM 214': { entrada: '06:13', salida: '14:42', horas: 8.48 },
+    'CM 215': { entrada: '06:16', salida: '14:25', horas: 8.15 },
+    'CM 216': { entrada: '06:23', salida: '14:29', horas: 8.1 },
+    'CM 217': { entrada: '08:56', salida: '15:56', horas: 7.0 },
+    'CT 201': { entrada: '13:08', salida: '21:01', horas: 7.88 },
+    'CT 202': { entrada: '13:22', salida: '21:15', horas: 7.88 },
+    'CT 203': { entrada: '13:29', salida: '21:22', horas: 7.88 },
+    'CT 204': { entrada: '13:36', salida: '21:29', horas: 7.88 },
+    'CT 205': { entrada: '13:43', salida: '21:36', horas: 7.88 },
+    'CT 206': { entrada: '13:50', salida: '22:09', horas: 8.32 },
+    'CT 207': { entrada: '13:53', salida: '22:18', horas: 8.42 },
+    'CT 208': { entrada: '13:57', salida: '22:18', horas: 8.35 },
+    'CT 209': { entrada: '14:04', salida: '22:26', horas: 8.37 },
+    'CT 210': { entrada: '14:09', salida: '22:32', horas: 8.38 },
+    'CT 211': { entrada: '14:11', salida: '22:28', horas: 8.28 },
+    'CT 212': { entrada: '14:16', salida: '22:39', horas: 8.38 },
+    'CT 213': { entrada: '14:18', salida: '22:36', horas: 8.3 },
+    'CT 214': { entrada: '14:23', salida: '22:48', horas: 8.42 },
+    'CT 215': { entrada: '14:32', salida: '22:53', horas: 8.35 },
+    'CT 216': { entrada: '14:44', salida: '23:05', horas: 8.35 },
+    'CT 217': { entrada: '16:56', salida: '00:37', horas: 7.68 },
+    'CT 218': { entrada: '17:06', salida: '00:55', horas: 7.82 },
+    'CT 219': { entrada: '17:17', salida: '00:19', horas: 7.03 },
+    'CT 220': { entrada: '20:43', salida: '02:43', horas: 6.0 },
+    'CT 221': { entrada: '20:52', salida: '03:41', horas: 6.82 },
+    'CT 222': { entrada: '20:58', salida: '02:58', horas: 6.0 },
+    'CT 223': { entrada: '21:12', salida: '03:12', horas: 6.0 },
+    'CT 224': { entrada: '21:13', salida: '03:13', horas: 6.0 },
+    'CT 225': { entrada: '21:13', salida: '03:28', horas: 6.25 },
+    'CT 226': { entrada: '21:20', salida: '03:26', horas: 6.1 },
+    'CT 227': { entrada: '22:00', salida: '04:00', horas: 6.0 },
+    'CT 228': { entrada: '21:34', salida: '03:56', horas: 6.37 },
+    'RM 200': { entrada: '06:00', salida: '14:00', horas: 8.0 },
+    'RN 200': { entrada: '22:00', salida: '06:00', horas: 8.0 },
+    'RT 200': { entrada: '14:00', salida: '22:00', horas: 8.0 },
+  },
+  sabado: {
+    'CM 301': { entrada: '05:20', salida: '13:44', horas: 8.4 },
+    'CM 302': { entrada: '05:37', salida: '13:54', horas: 8.28 },
+    'CM 303': { entrada: '05:44', salida: '13:50', horas: 8.1 },
+    'CM 304': { entrada: '05:48', salida: '14:20', horas: 8.53 },
+    'CM 305': { entrada: '05:50', salida: '14:14', horas: 8.4 },
+    'CM 306': { entrada: '06:05', salida: '14:30', horas: 8.42 },
+    'CM 307': { entrada: '06:09', salida: '14:24', horas: 8.25 },
+    'CM 308': { entrada: '06:23', salida: '14:54', horas: 8.52 },
+    'CM 309': { entrada: '08:13', salida: '15:04', horas: 6.85 },
+    'CM 310': { entrada: '08:30', salida: '14:50', horas: 6.33 },
+    'CM 311': { entrada: '08:40', salida: '14:40', horas: 6.0 },
+    'CT 301': { entrada: '13:00', salida: '20:54', horas: 7.9 },
+    'CT 302': { entrada: '13:30', salida: '21:24', horas: 7.9 },
+    'CT 303': { entrada: '13:34', salida: '21:54', horas: 8.33 },
+    'CT 304': { entrada: '13:40', salida: '21:34', horas: 7.9 },
+    'CT 305': { entrada: '13:50', salida: '21:44', horas: 7.9 },
+    'CT 306': { entrada: '14:10', salida: '22:04', horas: 7.9 },
+    'CT 307': { entrada: '14:14', salida: '22:34', horas: 8.33 },
+    'CT 308': { entrada: '14:20', salida: '22:14', horas: 7.9 },
+    'CT 309': { entrada: '14:30', salida: '22:24', horas: 7.9 },
+    'CT 310': { entrada: '14:44', salida: '23:04', horas: 8.33 },
+    'CT 311': { entrada: '16:24', salida: '00:40', horas: 8.27 },
+    'CT 312': { entrada: '16:54', salida: '01:10', horas: 8.27 },
+    'CT 313': { entrada: '20:35', salida: '03:26', horas: 6.85 },
+    'CT 314': { entrada: '20:43', salida: '02:43', horas: 6.0 },
+    'CT 315': { entrada: '20:44', salida: '03:41', horas: 6.95 },
+    'CT 316': { entrada: '20:58', salida: '02:58', horas: 6.0 },
+    'CT 317': { entrada: '21:03', salida: '03:03', horas: 6.0 },
+    'CT 318': { entrada: '21:11', salida: '03:11', horas: 6.0 },
+    'CT 319': { entrada: '21:30', salida: '03:30', horas: 6.0 },
+    'CT 320': { entrada: '21:56', salida: '03:56', horas: 6.0 },
+    'RM 300': { entrada: '05:45', salida: '13:45', horas: 8.0 },
+    'RN 300': { entrada: '22:00', salida: '06:00', horas: 8.0 },
+    'RT 300': { entrada: '14:00', salida: '22:00', horas: 8.0 },
+  },
+  domingo: {
+    'CM 401': { entrada: '05:20', salida: '13:42', horas: 8.37 },
+    'CM 402': { entrada: '05:37', salida: '13:53', horas: 8.27 },
+    'CM 403': { entrada: '05:44', salida: '13:47', horas: 8.05 },
+    'CM 404': { entrada: '05:50', salida: '14:15', horas: 8.42 },
+    'CM 405': { entrada: '06:10', salida: '14:27', horas: 8.28 },
+    'CM 406': { entrada: '06:10', salida: '14:26', horas: 8.27 },
+    'CM 407': { entrada: '06:23', salida: '14:42', horas: 8.32 },
+    'CM 408': { entrada: '06:28', salida: '14:38', horas: 8.17 },
+    'CM 409': { entrada: '08:13', salida: '14:59', horas: 6.77 },
+    'CM 410': { entrada: '08:40', salida: '15:00', horas: 6.33 },
+    'CT 401': { entrada: '13:32', salida: '20:13', horas: 6.68 },
+    'CT 402': { entrada: '13:37', salida: '19:51', horas: 6.23 },
+    'CT 403': { entrada: '13:43', salida: '20:24', horas: 6.68 },
+    'CT 404': { entrada: '13:54', salida: '21:47', horas: 7.88 },
+    'CT 405': { entrada: '13:48', salida: '22:10', horas: 8.37 },
+    'CT 406': { entrada: '14:27', salida: '22:39', horas: 8.2 },
+    'CT 407': { entrada: '14:32', salida: '22:40', horas: 8.13 },
+    'CT 408': { entrada: '14:38', salida: '22:54', horas: 8.27 },
+    'CT 409': { entrada: '14:49', salida: '23:09', horas: 8.33 },
+    'CT 410': { entrada: '15:17', salida: '23:42', horas: 8.42 },
+    'CT 411': { entrada: '16:34', salida: '00:10', horas: 7.6 },
+    'CT 412': { entrada: '17:07', salida: '00:24', horas: 7.28 },
+    'CT 413': { entrada: '18:08', salida: '00:39', horas: 6.52 },
+    'CT 414': { entrada: '18:12', salida: '00:12', horas: 6.0 },
+    'CT 415': { entrada: '18:54', salida: '00:54', horas: 6.0 },
+    'RM 400': { entrada: '06:05', salida: '14:05', horas: 8.0 },
+    'RN 400': { entrada: '22:00', salida: '06:00', horas: 8.0 },
+    'RT 400': { entrada: '14:00', salida: '22:00', horas: 8.0 },
+  },
+};
+
+function getDayType(dateStr) {
+  const [dd, mm, yy] = dateStr.split('/').map(Number);
+  const dow = new Date(yy, mm - 1, dd).getDay();
+  if (dow === 0) return 'domingo';
+  if (dow === 6) return 'sabado';
+  if (dow === 5) return 'viernes';
+  return 'lunes';
+}
+
+function getShiftSchedule(shift, dateStr) {
+  if (!shift || shift === 'D') return null;
+  const dayType = getDayType(dateStr);
+  const schedules = SHIFT_SCHEDULES[dayType] || {};
+  if (schedules[shift]) return schedules[shift];
+  // Sin espacios extra: normalizar
+  const norm = shift.replace(/\s+/g, ' ').trim();
+  if (schedules[norm]) return schedules[norm];
+  return null;
+}
+
+// Cambios guardados en memoria (sin localStorage para máxima compatibilidad)
+const modifications = {};
+let editingDate = null;
+
+// Intentar cargar cambios previos de localStorage si está disponible (opcional)
+try {
+  const saved = localStorage.getItem('velasco_turnos_2026');
+  if (saved) {
+    const parsed = JSON.parse(saved);
+    Object.assign(modifications, parsed);
+  }
+} catch(e) { /* localStorage no disponible, no pasa nada */ }
+
+function persistModifications() {
+  // Intentar guardar en localStorage si está disponible
+  try {
+    localStorage.setItem('velasco_turnos_2026', JSON.stringify(modifications));
+  } catch(e) { /* localStorage bloqueado, los cambios se mantienen en memoria */ }
+}
+
+function exportChanges() {
+  const count = Object.keys(modifications).length;
+  if (!count) { alert('No hay cambios que exportar.'); return; }
+  const blob = new Blob([JSON.stringify(modifications, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'turnos_cambios_velasco.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importChanges(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      Object.keys(modifications).forEach(k => delete modifications[k]);
+      Object.assign(modifications, data);
+      persistModifications();
+      updateChangesBar();
+      updateStats();
+      updateTodayBadge();
+      render();
+      alert(`✅ ${Object.keys(data).length} cambios importados correctamente.`);
+    } catch(err) {
+      alert('❌ Archivo no válido. Asegúrate de importar un fichero exportado desde esta app.');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function getShift(date) {
+  if (modifications[date] !== undefined) return modifications[date];
+  return byDate[date] ? byDate[date].shift : 'D';
+}
+
+function isModified(date) {
+  return modifications[date] !== undefined;
+}
+
+function openModal(dateStr) {
+  editingDate = dateStr;
+  const entry = byDate[dateStr];
+  const currentShift = getShift(dateStr);
+  const dayName = entry ? entry.day : '';
+
+  document.getElementById('modalDateLabel').textContent = `${dayName} · ${dateStr}`;
+
+  const cs = document.getElementById('modalCurrentShift');
+  cs.textContent = currentShift;
+  cs.className = 'shift-badge ' + getShiftClass(currentShift);
+
+  // Populate select
+  const sel = document.getElementById('modalSelect');
+  sel.innerHTML = '<option value="">– Selecciona un turno –</option>';
+
+  // Group options
+  const groups = {
+    'CT – Turno CT': ALL_SHIFT_OPTIONS.filter(s => s.startsWith('CT')),
+    'CM – Turno CM': ALL_SHIFT_OPTIONS.filter(s => s.startsWith('CM')),
+    'RM – Reserva Mañana': ALL_SHIFT_OPTIONS.filter(s => s.startsWith('RM')),
+    'RN – Reserva Noche': ALL_SHIFT_OPTIONS.filter(s => s.startsWith('RN')),
+    'RT – Reserva Tarde': ALL_SHIFT_OPTIONS.filter(s => s.startsWith('RT')),
+    'DIS – Disponible': ALL_SHIFT_OPTIONS.filter(s => s.startsWith('DIS')),
+    'Vacaciones / Libre': ALL_SHIFT_OPTIONS.filter(s => ['VL','VN','LD','DN','DR'].includes(s)),
+    'Descanso': ['D'],
+  };
+
+  for (const [label, opts] of Object.entries(groups)) {
+    if (!opts.length) continue;
+    const og = document.createElement('optgroup');
+    og.label = label;
+    opts.forEach(o => {
+      const opt = document.createElement('option');
+      opt.value = o;
+      opt.textContent = o;
+      if (o === currentShift) opt.selected = true;
+      og.appendChild(opt);
+    });
+    sel.appendChild(og);
+  }
+
+  document.getElementById('modalInput').value = '';
+  const sched = getShiftSchedule(currentShift, dateStr);
+  const info = document.getElementById('modalScheduleInfo');
+  if (sched) {
+    document.getElementById('modalEntrada').textContent = sched.entrada;
+    document.getElementById('modalSalida').textContent = sched.salida;
+    document.getElementById('modalHoras').textContent = sched.horas + 'h';
+    info.style.display = 'flex';
+  } else {
+    info.style.display = 'none';
+  }
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  editingDate = null;
+}
+
+function closeModalOnOverlay(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+}
+
+function onSelectChange() {
+  const v = document.getElementById('modalSelect').value;
+  if (v) document.getElementById('modalInput').value = '';
+}
+
+function onInputChange() {
+  const v = document.getElementById('modalInput').value.trim();
+  if (v) document.getElementById('modalSelect').value = '';
+}
+
+function saveEdit() {
+  const selectVal = document.getElementById('modalSelect').value;
+  const inputVal = document.getElementById('modalInput').value.trim().toUpperCase();
+  const newShift = inputVal || selectVal;
+
+  if (!newShift) {
+    document.getElementById('modalInput').style.borderColor = 'var(--red)';
+    setTimeout(() => document.getElementById('modalInput').style.borderColor = '', 1200);
+    return;
+  }
+
+  const originalShift = byDate[editingDate] ? byDate[editingDate].shift : 'D';
+
+  if (newShift === originalShift) {
+    delete modifications[editingDate];
+  } else {
+    modifications[editingDate] = newShift;
+  }
+
+  persistModifications();
+  updateChangesBar();
+  updateStats();
+  updateTodayBadge();
+  closeModal();
+  render();
+}
+
+function resetChanges() {
+  if (!Object.keys(modifications).length) return;
+  if (confirm('¿Restaurar todos los turnos al estado original?')) {
+    Object.keys(modifications).forEach(k => delete modifications[k]);
+    persistModifications();
+    updateChangesBar();
+    updateStats();
+    updateTodayBadge();
+    render();
+  }
+}
+
+function updateChangesBar() {
+  const count = Object.keys(modifications).length;
+  const bar = document.getElementById('changesBar');
+  const cnt = document.getElementById('changesCount');
+  if (count > 0) {
+    bar.classList.add('visible');
+    cnt.textContent = `(${count} día${count > 1 ? 's' : ''} modificado${count > 1 ? 's' : ''} · guardado automáticamente 💾)`;
+  } else {
+    bar.classList.remove('visible');
+  }
+}
+
+// ─── OVERRIDE RENDER FUNCTIONS TO USE EDITABLE SHIFTS ───
+
+const _origRenderCalendar = renderCalendar;
+renderCalendar = function() {
+  document.getElementById('monthLabel').textContent = `${MONTHS_ES[currentMonth]} ${currentYear}`;
+
+  const firstDay = new Date(currentYear, currentMonth, 1);
+  let startDow = firstDay.getDay();
+  if (startDow === 0) startDow = 6; else startDow--;
+
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  const search = getSearch();
+
+  let html = '<div class="calendar-grid">';
+  DAYS_ES.forEach(d => html += `<div class="cal-header">${d}</div>`);
+  for (let i = 0; i < startDow; i++) html += '<div class="cal-day empty"></div>';
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${String(d).padStart(2,'0')}/${String(currentMonth+1).padStart(2,'0')}/${currentYear}`;
+    const shift = getShift(dateStr);
+    const isToday = dateStr === todayStr;
+    const modified = isModified(dateStr);
+    const cls = getShiftClass(shift);
+    const passes = matchesFilter(shift) && (!search || shift.toUpperCase().includes(search));
+
+    html += `<div class="cal-day ${isToday ? 'today' : ''}" style="${!passes && shift ? 'opacity:0.25' : ''}">
+      <span class="day-num">${d}${modified ? '<span class="modified-dot"></span>' : ''}</span>
+      <button class="edit-btn" onclick="openModal('${dateStr}')" title="Editar turno">✎</button>`;
+    if (shift && shift !== 'D') {
+      html += `<span class="shift-badge ${cls}" style="cursor:pointer" onclick="openModal('${dateStr}')">${shift}</span>`;
+    } else if (shift === 'D') {
+      html += `<span style="font-size:0.6rem;color:var(--text-muted);cursor:pointer" onclick="openModal('${dateStr}')">D</span>`;
+    }
+    html += '</div>';
+  }
+  html += '</div>';
+  document.getElementById('content').innerHTML = html;
+};
+
+const _origRenderList = renderList;
+renderList = function() {
+  document.getElementById('monthLabel').textContent = `${MONTHS_ES[currentMonth]} ${currentYear}`;
+  const search = getSearch();
+  const filtered = SCHEDULE.filter(s => {
+    const [dd, mm, yy] = s.date.split('/').map(Number);
+    if (mm - 1 !== currentMonth || yy !== currentYear) return false;
+    const shift = getShift(s.date);
+    if (!matchesFilter(shift)) return false;
+    if (search && !shift.toUpperCase().includes(search)) return false;
+    return true;
+  });
+
+  let html = `<div class="section-title">${filtered.length} días · ${MONTHS_ES[currentMonth]}</div><div class="list-view">`;
+  filtered.forEach(s => {
+    const isToday = s.date === todayStr;
+    const shift = getShift(s.date);
+    const modified = isModified(s.date);
+    const cls = getShiftClass(shift);
+    html += `<div class="list-item ${isToday ? 'today' : ''}">
+      <span class="list-date">${s.date}${modified ? '<span class="modified-dot"></span>' : ''}</span>
+      <span class="list-day">${s.day}</span>
+      <span class="list-shift ${cls}">${shift}</span>
+      <span style="font-size:0.65rem;color:var(--text-muted)">${getShiftDesc(shift)}</span>
+      ${(sc => sc ? `<span style="font-size:0.68rem;color:var(--green);font-weight:600">${sc.entrada}</span><span style="font-size:0.6rem;color:var(--text-muted);margin:0 3px">→</span><span style="font-size:0.68rem;color:var(--red);font-weight:600">${sc.salida}</span><span style="font-size:0.62rem;color:var(--accent);margin-left:5px">(${sc.horas}h)</span>` : ``)(getShiftSchedule(shift, s.date))}
+      <button class="list-edit-btn" onclick="openModal('${s.date}')">✎ Editar</button>
+    </div>`;
+  });
+  html += '</div>';
+  document.getElementById('content').innerHTML = html;
+};
+
+const _origRenderWeek = renderWeek;
+renderWeek = function() {
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(currentWeekStart);
+    d.setDate(d.getDate() + i);
+    days.push(d);
+  }
+  const from = dateToStr(days[0]);
+  const to = dateToStr(days[6]);
+  document.getElementById('weekLabel').textContent = `${from} — ${to}`;
+
+  const search = getSearch();
+  let html = '<div class="week-view">';
+  days.forEach((d, i) => {
+    const ds = dateToStr(d);
+    const shift = getShift(ds);
+    const isToday = ds === todayStr;
+    const modified = isModified(ds);
+    const cls = getShiftClass(shift);
+    const passes = matchesFilter(shift) && (!search || (shift && shift.toUpperCase().includes(search)));
+    html += `<div class="week-col ${isToday ? 'today-col' : ''}">
+      <div class="week-col-header">
+        <div class="wday">${DAYS_ES[i]}${modified ? '<span class="modified-dot"></span>' : ''}</div>
+        <div class="wdate">${d.getDate()}</div>
+        <div style="font-size:0.6rem;color:var(--text-muted)">${MONTHS_ES[d.getMonth()].substring(0,3)}</div>
+      </div>
+      <div class="week-shift ${cls}" style="${!passes && shift ? 'opacity:0.2' : ''};cursor:pointer" onclick="openModal('${ds}')">
+        ${shift || '—'}
+      </div>
+      <button class="week-edit-btn" onclick="openModal('${ds}')">✎ Editar</button>
+    </div>`;
+  });
+  html += '</div>';
+  document.getElementById('content').innerHTML = html;
+};
+
+// Override updateStats to use current shifts (including modifications)
+const _origUpdateStats = updateStats;
+updateStats = function() {
+  let ct=0, cm=0, vl=0, dis=0, rest=0, rm=0;
+  SCHEDULE.forEach(s => {
+    const sh = getShift(s.date).toUpperCase();
+    if (sh.startsWith('CT')) ct++;
+    else if (sh.startsWith('CM')) cm++;
+    else if (sh === 'VL' || sh === 'VN') vl++;
+    else if (sh.startsWith('DIS')) dis++;
+    else if (sh === 'D' || sh === 'DR' || sh === 'DN' || sh === 'LD') rest++;
+    else if (sh.startsWith('RM') || sh.startsWith('RN') || sh.startsWith('RT')) rm++;
+  });
+  document.getElementById('s-ct').textContent = ct;
+  document.getElementById('s-cm').textContent = cm;
+  document.getElementById('s-vl').textContent = vl;
+  document.getElementById('s-dis').textContent = dis;
+  document.getElementById('s-d').textContent = rest;
+  document.getElementById('s-rm').textContent = rm;
+};
+
+// Keyboard: close modal with Escape
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeModal(); closePdfModal(); }
+});
+
+// PDF Export
+const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+function showPdfModal() {
+  const grid = document.getElementById('pdfMonthGrid');
+  grid.innerHTML = '';
+  MESES.forEach((m, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'pdf-month-btn';
+    btn.textContent = m.substring(0,3);
+    btn.onclick = () => exportPdf('month', i + 1);
+    grid.appendChild(btn);
+  });
+  document.getElementById('pdfModalOverlay').classList.add('open');
+}
+
+function closePdfModal(e) {
+  if (!e || e.target === document.getElementById('pdfModalOverlay')) {
+    document.getElementById('pdfModalOverlay').classList.remove('open');
+  }
+}
+
+function getShiftColor(shift) {
+  if (!shift || shift === 'D') return '#475569';
+  if (shift.startsWith('CT')) return '#4f9cf9';
+  if (shift.startsWith('CM')) return '#c084fc';
+  if (shift.startsWith('RM') || shift.startsWith('RN') || shift.startsWith('RT')) return '#fbbf24';
+  if (shift.startsWith('DIS')) return '#fb923c';
+  if (shift === 'VL' || shift === 'VN') return '#34d399';
+  if (shift === 'DR' || shift === 'DN' || shift === 'LD') return '#2dd4bf';
+  return '#94a3b8';
+}
+
+function exportPdf(type, month) {
+  document.getElementById('pdfModalOverlay').classList.remove('open');
+
+  let days;
+  let title;
+  if (type === 'year') {
+    days = SCHEDULE.map(e => ({ ...e, shift: getShift(e.date) }));
+    title = 'Turnos Velasco 2026 — Año Completo';
+  } else {
+    const mm = String(month).padStart(2, '0');
+    days = SCHEDULE
+      .filter(e => e.date.slice(3, 5) === mm)
+      .map(e => ({ ...e, shift: getShift(e.date) }));
+    title = `Turnos Velasco 2026 — ${MESES[month - 1]}`;
+  }
+
+  // Build HTML for print
+  let rows = '';
+  let prevMonth = '';
+  days.forEach(d => {
+    const mon = d.date.slice(3, 5);
+    if (mon !== prevMonth) {
+      prevMonth = mon;
+      const mName = MESES[parseInt(mon) - 1];
+      rows += `<tr class="month-header"><td colspan="5">${mName} 2026</td></tr>`;
+    }
+    const sched = getShiftSchedule(d.shift, d.date);
+    const color = getShiftColor(d.shift);
+    const entrada = sched ? sched.entrada : '–';
+    const salida = sched ? sched.salida : '–';
+    const horas = sched ? sched.horas + 'h' : '–';
+    rows += `<tr>
+      <td style="color:#94a3b8">${d.date}</td>
+      <td style="color:#94a3b8">${d.day}</td>
+      <td><span style="background:${color}22;color:${color};padding:2px 8px;border-radius:4px;font-weight:700">${d.shift}</span></td>
+      <td>${entrada} → ${salida}</td>
+      <td style="color:#4f9cf9">${horas}</td>
+    </tr>`;
+  });
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>${title}</title>
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 11px; color: #1e293b; margin: 20px; }
+    h1 { font-size: 16px; margin-bottom: 4px; color: #0f172a; }
+    .sub { font-size: 10px; color: #64748b; margin-bottom: 16px; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #0f172a; color: white; padding: 6px 8px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+    td { padding: 5px 8px; border-bottom: 1px solid #e2e8f0; }
+    tr:nth-child(even) { background: #f8fafc; }
+    .month-header td { background: #1e40af; color: white; font-weight: 700; font-size: 12px; padding: 7px 8px; }
+    @media print { body { margin: 10px; } }
+  </style></head><body>
+  <h1>${title}</h1>
+  <div class="sub">Velasco Esteban, José Carlos · Generado el ${new Date().toLocaleDateString('es-ES')}</div>
+  <table>
+    <thead><tr><th>Fecha</th><th>Día</th><th>Turno</th><th>Horario</th><th>Horas</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <script>window.onload=()=>{window.print();}<\/script>
+  </body></html>`;
+
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  window.open(url, '_blank');
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+// Init
+updateStats();
+updateTodayBadge();
+render();
+</script>
+</body>
+</html>
+<script>
+// Service Worker inline — funciona sin archivo externo
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    const CACHE = 'turnos-v1';
+    self.addEventListener('install', e => {
+      self.skipWaiting();
+    });
+    self.addEventListener('activate', e => {
+      self.clients.claim();
+    });
+    self.addEventListener('fetch', e => {
+      e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+    });
+  `;
+  const blob = new Blob([swCode], {type: 'application/javascript'});
+  const swURL = URL.createObjectURL(blob);
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register(swURL).catch(()=>{});
+  });
+}
+</script>
